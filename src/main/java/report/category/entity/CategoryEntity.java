@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.DynamicInsert;
+import report.category.dto.CategoryDto;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -50,4 +51,10 @@ public class CategoryEntity extends BaseEntity {
         parentCategory.setParent(this);
         this.childCategoryList.add(parentCategory);
     }
+
+    @PrePersist
+    public void setField(){
+        this.deleteFlag = (null == this.deleteFlag || this.deleteFlag.isEmpty()) ? "N":this.deleteFlag;
+    }
+
 }

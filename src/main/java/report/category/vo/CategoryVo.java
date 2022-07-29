@@ -5,7 +5,7 @@ import lombok.Getter;
 @Getter
 public class CategoryVo {
 
-    private int page;
-    private int size;
+    private String categoryNm;
 
+    private PagingVo paging;
 }
