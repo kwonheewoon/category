@@ -28,22 +28,13 @@ public class CategoryRestController {
         JSONObject results = new JSONObject();
 
         var resultList = categoryService.categoryList(vo);
-        results.put("result", resultList.getContent());
-        results.put("currentPageIndex", vo.getPaging() != null ? vo.getPaging().getPageNo() : 1);
-
-        var result = resultList.getContent().parallelStream().findAny();
-
-        if (result.isPresent()) {
-            results.put("totalRowCount", resultList.getTotalElements());
-        } else {
-            results.put("totalRowCount", 0);
-        }
+        results.put("result", resultList);
 
         return new ResponseEntity<>(results, HttpStatus.OK);
     }
 
     @PostMapping("/categorys")
-    public ResponseEntity<Object> add(@RequestBody CategoryDto dto){
+    public ResponseEntity<Object> save(@RequestBody CategoryDto dto){
 
         return new ResponseEntity<>(categoryService.saveCategory(dto), HttpStatus.CREATED);
 

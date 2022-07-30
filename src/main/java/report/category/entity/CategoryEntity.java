@@ -1,9 +1,7 @@
 package report.category.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.DynamicInsert;
 import report.category.dto.CategoryDto;
@@ -16,7 +14,7 @@ import java.util.List;
 @Table(name = "category")
 @Getter
 @Builder
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @DynamicInsert
 public class CategoryEntity extends BaseEntity {
@@ -27,6 +25,9 @@ public class CategoryEntity extends BaseEntity {
 
     @Column(name = "category_nm", nullable = false, length = 255)
     private String categoryNm;
+
+    @Column(name = "depth", nullable = false, length = 255)
+    private int depth;
 
     @Column(name = "order_no", nullable = false, length = 255)
     private int orderNo;
@@ -39,12 +40,22 @@ public class CategoryEntity extends BaseEntity {
     @JoinColumn(name = "parent_id")
     private CategoryEntity parentCategory;
 
-    @OneToMany(mappedBy = "parentCategory")
+    @OneToMany(mappedBy = "parentCategory", cascade = CascadeType.ALL, orphanRemoval = true)
+    @BatchSize(size = 100)
+    @Builder.Default
     private List<CategoryEntity> childCategoryList = new ArrayList<>();
 
 
     public void setParent(CategoryEntity parentCategory){
         this.parentCategory = parentCategory;
+    }
+
+    public void changeDepth(int depth){
+        this.depth = depth;
+    }
+
+    public void changeOrderNo(int orderNo){
+        this.orderNo = orderNo;
     }
 
     public void addChildCategory(CategoryEntity parentCategory){
@@ -54,6 +65,7 @@ public class CategoryEntity extends BaseEntity {
 
     @PrePersist
     public void setField(){
+        this.depth = (this.depth >= 0) ? this.depth : 1;
         this.deleteFlag = (null == this.deleteFlag || this.deleteFlag.isEmpty()) ? "N":this.deleteFlag;
     }
 
