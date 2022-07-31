@@ -21,6 +21,8 @@ public class CategoryApiDto {
 
     private int orderNo;
 
+    private int depth;
+
     private ParentCategoryApiDto parentCategory = new ParentCategoryApiDto();
 
     private List<CategoryApiDto> childCategoryList = new ArrayList<>();
@@ -45,6 +47,7 @@ public class CategoryApiDto {
                 .id(categoryEntity.getId())
                 .categoryNm(categoryEntity.getCategoryNm())
                 .orderNo(categoryEntity.getOrderNo())
+                .depth(categoryEntity.getDepth())
                 .createDate(categoryEntity.getCreateDate())
                 .lastModifiedDate(categoryEntity.getLastModifiedDate())
                 /*.parentCategory(

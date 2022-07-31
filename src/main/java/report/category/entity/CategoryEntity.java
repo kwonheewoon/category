@@ -4,6 +4,7 @@ import lombok.*;
 import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.DynamicInsert;
+import org.hibernate.annotations.DynamicUpdate;
 import report.category.dto.CategoryDto;
 
 import javax.persistence.*;
@@ -17,11 +18,12 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @DynamicInsert
+@DynamicUpdate
 public class CategoryEntity extends BaseEntity {
 
     @Id @Column(name = "id", nullable = false)
     @GeneratedValue
-    private long id;
+    private Long id;
 
     @Column(name = "category_nm", nullable = false, length = 255)
     private String categoryNm;
@@ -58,6 +60,16 @@ public class CategoryEntity extends BaseEntity {
         this.orderNo = orderNo;
     }
 
+    public void changeCategoryNm(String categoryNm){
+        if(null != categoryNm && !categoryNm.isEmpty()){
+            this.categoryNm = categoryNm;
+        }
+    }
+
+    public void changeParentCategory(CategoryEntity parentCategory){
+        this.parentCategory = parentCategory;
+    }
+
     public void addChildCategory(CategoryEntity parentCategory){
         parentCategory.setParent(this);
         this.childCategoryList.add(parentCategory);
@@ -65,8 +77,14 @@ public class CategoryEntity extends BaseEntity {
 
     @PrePersist
     public void setField(){
-        this.depth = (this.depth >= 0) ? this.depth : 1;
+        this.depth = (this.depth > 0) ? this.depth : 1;
         this.deleteFlag = (null == this.deleteFlag || this.deleteFlag.isEmpty()) ? "N":this.deleteFlag;
+    }
+
+    public static CategoryEntity entityConvert(CategoryDto categoryDto){
+        return CategoryEntity.builder()
+                .id(categoryDto.getId())
+                .build();
     }
 
 }

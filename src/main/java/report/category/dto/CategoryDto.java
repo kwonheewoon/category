@@ -22,6 +22,8 @@ public class CategoryDto {
 
     private String categoryNm;
 
+    private int depth;
+
     private int orderNo;
 
     private CategoryDto parentCategory;

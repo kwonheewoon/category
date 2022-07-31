@@ -5,8 +5,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import report.category.exception.CategoryException;
+import report.category.exception.ErrorCode;
+import report.category.exception.ErrorResponse;
 
 import java.nio.file.AccessDeniedException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 @ControllerAdvice
 @Slf4j
@@ -14,11 +20,13 @@ public class ExceptionControllerAdvice {
 
     // 400
     @ExceptionHandler({
-            RuntimeException.class
+            CategoryException.class
     })
-    public ResponseEntity<Object> BadRequestException(final RuntimeException ex) {
-        log.warn("error", ex);
-        return ResponseEntity.badRequest().body(ex.getMessage());
+    public ResponseEntity<ErrorResponse> BadRequestException(final CategoryException ex) {
+        log.error("CategoryException: {}", ex.getErrorCode());
+        return ResponseEntity
+                .status(ex.getErrorCode().getStatus().value())
+                .body(new ErrorResponse(ex.getErrorCode()));
     }
 
     // 401
@@ -33,7 +41,7 @@ public class ExceptionControllerAdvice {
     public ResponseEntity<Object> handleAll(final Exception ex) {
         log.info(ex.getClass().getName());
         log.error("error", ex);
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(ErrorCode.INTERNAL_SERVER_ERROR.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
 }
