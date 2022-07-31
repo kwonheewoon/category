@@ -1,26 +1,19 @@
 package report.category.repository;
 
 import com.querydsl.core.dml.UpdateClause;
-import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import report.category.dto.CategoryApiDto;
 import report.category.dto.CategoryDto;
 import report.category.entity.CategoryEntity;
 import report.category.entity.QCategoryEntity;
 import report.category.vo.CategoryVo;
-
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -28,6 +21,9 @@ public class CategoryQueryRepository {
 
     private final JPAQueryFactory queryFactory;
 
+    /*
+    * 부모 Category id 와 현 depth가 일치하는 Category 카운팅
+    * */
     public Long maxOrderNo(Long parentCategoryId, int depth){
         var categoryEntity = QCategoryEntity.categoryEntity;
         return this.queryFactory.select(
@@ -42,6 +38,9 @@ public class CategoryQueryRepository {
                 .fetchOne();
     }
 
+    /*
+    * 전체 Category 조회
+    * */
     public List<CategoryApiDto> findAllcategorys(CategoryVo vo){
         var categoryEntity = QCategoryEntity.categoryEntity;
         var parentCategoryEntity = new QCategoryEntity("parentCategoryEntity");
@@ -74,6 +73,9 @@ public class CategoryQueryRepository {
                 .fetch();
     }
 
+    /*
+    * 상위 Category 조회
+    * */
     public CategoryApiDto findCategoryOne(Long searchCategoryId){
         var categoryEntity = QCategoryEntity.categoryEntity;
         var parentCategoryEntity = new QCategoryEntity("parentCategoryEntity");
@@ -105,7 +107,10 @@ public class CategoryQueryRepository {
                 .fetchOne();
     }
 
-    public List<CategoryApiDto> findAllChcildCategorys(List<Long> parentCategoryIds){
+    /*
+    * 자식 Category 조회
+    * */
+    public List<CategoryApiDto> findAllChildCategorys(List<Long> parentCategoryIds){
         var chcildCategoryEntity = QCategoryEntity.categoryEntity;
         var parentCategoryEntity = new QCategoryEntity("parentCategoryEntity");
 
@@ -137,6 +142,9 @@ public class CategoryQueryRepository {
                 .fetch();
     }
 
+    /*
+    * Category 수정
+    * */
     public Long updateCategory(Long id, CategoryDto dto) {
         var categoryEntity = QCategoryEntity.categoryEntity;
 
@@ -165,6 +173,9 @@ public class CategoryQueryRepository {
                 .execute();
     }
 
+    /*
+    * Category orderNo 수정
+    * */
     public Long updateCategoryOrderNo(Long id, int orderNo) {
         var categoryEntity = QCategoryEntity.categoryEntity;
         var result = this.queryFactory
@@ -176,6 +187,9 @@ public class CategoryQueryRepository {
         return result;
     }
 
+    /*
+    *
+    * */
     public Long deleteCategory(Long id) {
         var categoryEntity = QCategoryEntity.categoryEntity;
         var result = this.queryFactory

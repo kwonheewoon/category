@@ -2,11 +2,9 @@ package report.category.dto;
 
 import lombok.*;
 import report.category.entity.CategoryEntity;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Builder
 @Getter
@@ -15,22 +13,31 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 public class CategoryApiDto {
 
+    /*카테고리 ID*/
     private long id;
 
+    /*카테고리 명*/
     private String categoryNm;
 
+    /*카테고리 정렬 번호*/
     private int orderNo;
 
+    /*카테고리 계층*/
     private int depth;
 
+    /*부모 카테고리*/
     private ParentCategoryApiDto parentCategory = new ParentCategoryApiDto();
 
+    /*자식 카테고리*/
     private List<CategoryApiDto> childCategoryList = new ArrayList<>();
 
+    /*삭제 여부*/
     private String deleteFlag;
 
+    /*등록 날짜*/
     private LocalDateTime createDate;
 
+    /*마지막 수정 날짜*/
     private LocalDateTime lastModifiedDate;
 
     public CategoryApiDto(long id, String categoryNm, int orderNo, String deleteFlag, LocalDateTime createDate, LocalDateTime lastModifiedDate) {
@@ -50,14 +57,6 @@ public class CategoryApiDto {
                 .depth(categoryEntity.getDepth())
                 .createDate(categoryEntity.getCreateDate())
                 .lastModifiedDate(categoryEntity.getLastModifiedDate())
-                /*.parentCategory(
-                        new ParentCategoryApiDto(categoryEntity.getParentCategory())
-                )*/
-                /*.childCategoryList(
-                        categoryEntity.getChildCategoryList().stream().map(childCategoryData -> {
-                            return new CategoryApiDto(childCategoryData.getId(), childCategoryData.getCategoryNm(), childCategoryData.getOrderNo(), childCategoryData.getDeleteFlag(), childCategoryData.getCreateDate(), childCategoryData.getLastModifiedDate());
-                        }).collect(Collectors.toList())
-                )*/
                 .build();
     }
 

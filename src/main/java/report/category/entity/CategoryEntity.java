@@ -1,13 +1,13 @@
 package report.category.entity;
 
 import lombok.*;
-import org.hibernate.annotations.BatchSize;
-import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.DynamicInsert;
-import org.hibernate.annotations.DynamicUpdate;
+import org.hibernate.annotations.*;
 import report.category.dto.CategoryDto;
 
 import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,23 +23,29 @@ public class CategoryEntity extends BaseEntity {
 
     @Id @Column(name = "id", nullable = false)
     @GeneratedValue
+    @Comment("카테고리 id")
     private Long id;
 
     @Column(name = "category_nm", nullable = false, length = 255)
+    @Comment("카테고리 명")
     private String categoryNm;
 
     @Column(name = "depth", nullable = false, length = 255)
+    @Comment("카테고리 계층")
     private int depth;
 
     @Column(name = "order_no", nullable = false, length = 255)
+    @Comment("카테고리 정렬번호")
     private int orderNo;
 
     @Column(name = "delete_flag", nullable = false, length = 1)
     @ColumnDefault("'N'")
+    @Comment("삭제 여부")
     private String deleteFlag;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
+    @Comment("부모 카테고리 id")
     private CategoryEntity parentCategory;
 
     @OneToMany(mappedBy = "parentCategory", cascade = CascadeType.ALL, orphanRemoval = true)
