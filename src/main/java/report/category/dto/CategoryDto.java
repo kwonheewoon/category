@@ -4,6 +4,7 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Builder
 @Getter
@@ -28,5 +29,17 @@ public class CategoryDto {
     private CategoryDto parentCategory;
 
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CategoryDto that = (CategoryDto) o;
+        return id == that.id && orderNo == that.orderNo && depth == that.depth && Objects.equals(categoryNm, that.categoryNm) && Objects.equals(parentCategory, that.parentCategory);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, categoryNm, orderNo, depth, parentCategory);
+    }
 
 }

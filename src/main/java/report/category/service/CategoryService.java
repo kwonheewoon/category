@@ -22,10 +22,10 @@ public class CategoryService {
 
     private final CategoryQueryRepository categoryQueryRepository;
 
-    /*
-    * 전체 Category 조회
-    *   ㄴ하위 Category 조회
-    * */
+    /**
+     * 전체 Category 조회
+     *   ㄴ하위 Category 조회
+     */
     public List<CategoryApiDto> categoryList(CategoryVo vo) throws CategoryException{
 
         //전체 Category 조회
@@ -35,10 +35,10 @@ public class CategoryService {
         return setChildCategory(result);
     }
 
-    /*
+    /**
      * 상위 Category 조회
      *   ㄴ하위 Category 조회
-     * */
+     */
     public List<CategoryApiDto> find(Long searchCategoryId) throws CategoryException{
 
         //전체 Category 조회
@@ -49,9 +49,9 @@ public class CategoryService {
         return setChildCategory(Collections.singletonList(result));
     }
 
-    /*
-    * Category 저장
-    * */
+    /**
+     * Category 저장
+     */
     public CategoryApiDto saveCategory(CategoryDto dto){
 
         //저장할 Category entity 생성
@@ -85,9 +85,9 @@ public class CategoryService {
         return categoryQueryRepository.findCategoryOne(categoryRepository.save(categoryEntity).getId());
     }
 
-    /*
-    * Category 수정
-    * */
+    /**
+     * Category 수정
+     */
     @Transactional
     public CategoryApiDto modifyCategory(Long id, CategoryDto dto){
 
@@ -124,10 +124,10 @@ public class CategoryService {
         return categoryQueryRepository.findCategoryOne(id);
     }
 
-    /*
-    * Category 삭제
-    * 연관관계 매핑되어 있는 자식 Category 일괄 삭제
-    * */
+    /**
+     * Category 삭제
+     * 연관관계 매핑되어 있는 자식 Category 일괄 삭제
+     */
     @Transactional
     public void deleteCategory(Long id){
 
@@ -137,9 +137,9 @@ public class CategoryService {
         categoryRepository.deleteById(findCategoryEntity.getId());
     }
 
-    /*
-    * 하위 depth 자식 Category 조회 (재귀함수)
-    * */
+    /**
+     * 하위 depth 자식 Category 조회 (재귀함수)
+     */
     public List<CategoryApiDto> setChildCategory(List<CategoryApiDto> parentCategoryList) throws CategoryException{
 
         //파라미터로 넘어온 부모객체의 id 값만 뽑아 자식 Category 조회
