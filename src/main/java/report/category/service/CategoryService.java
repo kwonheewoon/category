@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import report.category.dto.CategoryApiDto;
 import report.category.dto.CategoryDto;
 import report.category.entity.CategoryEntity;
+import report.category.enumclass.CategoryEnum;
 import report.category.exception.CategoryException;
 import report.category.exception.ErrorCode;
 import report.category.repository.CategoryQueryRepository;
@@ -41,7 +42,7 @@ public class CategoryService {
      */
     public List<CategoryApiDto> find(Long searchCategoryId) throws CategoryException{
 
-        //전체 Category 조회
+        //상위 Category 조회
         var result = categoryQueryRepository.findCategoryOne(searchCategoryId);
         
         //하위 depth Category 조회하여 세팅해준 후 리턴
@@ -129,12 +130,19 @@ public class CategoryService {
      * 연관관계 매핑되어 있는 자식 Category 일괄 삭제
      */
     @Transactional
-    public void deleteCategory(Long id){
+    public String deleteCategory(Long id){
 
         //삭제할 Category 조회
         var findCategoryEntity = categoryRepository.findById(id).orElseThrow(() -> new CategoryException(ErrorCode.CATEGORY_NOT_FOUND));
         //Category 삭제
         categoryRepository.deleteById(findCategoryEntity.getId());
+
+        //삭제된 Category 조회후 존재하지 않으면 삭제 성공
+        if(categoryQueryRepository.findCategoryOne(findCategoryEntity.getId()) == null){
+            return CategoryEnum.CATEGORY_DELETE_SUCESS.getMessage();
+        }
+
+        return CategoryEnum.CATEGORY_DELETE_FAIL.getMessage();
     }
 
     /**

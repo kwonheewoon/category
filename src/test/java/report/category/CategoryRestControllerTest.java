@@ -16,6 +16,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import report.category.dto.CategoryApiDto;
 import report.category.dto.CategoryDto;
+import report.category.enumclass.CategoryEnum;
 import report.category.service.CategoryService;
 import report.category.vo.CategoryVo;
 
@@ -154,9 +155,8 @@ public class CategoryRestControllerTest {
         CategoryDto dto = new CategoryDto();
         dto.setCategoryNm("카테고리1 수정");
         dto.setParentCategory(CategoryDto.builder().id(3L).build());
-        doNothing().when(categoryService).deleteCategory(any());
-
-        String expectByUsername = "$.categoryNm";
+        //doNothing().when(categoryService).deleteCategory(any());
+        given(categoryService.deleteCategory(anyLong())).willReturn(CategoryEnum.CATEGORY_DELETE_SUCESS.getMessage());
 
         mockMvc.perform(
                         delete("/categorys/1")

@@ -72,8 +72,7 @@ public class CategoryRestController {
     @DeleteMapping("/categorys/{id}")
     @ApiOperation(value = "5.Category 삭제")
     ResponseEntity<Object> delete(@PathVariable Long id){
-        categoryService.deleteCategory(id);
-        return new ResponseEntity<>(HttpStatus.CREATED);
+        return new ResponseEntity<>(categoryService.deleteCategory(id), HttpStatus.CREATED);
     }
 
 }
