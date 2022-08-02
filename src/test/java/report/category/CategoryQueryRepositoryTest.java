@@ -345,7 +345,7 @@ public class CategoryQueryRepositoryTest {
             updateBuilder.set(categoryEntity.categoryNm, dto.getCategoryNm());
         }
         //부모 카테고리 수정
-        if (null != dto.getParentCategory()) {
+        if (!dto.parentCategoryisEmpty()) {
             updateBuilder.set(categoryEntity.parentCategory, CategoryEntity.entityConvert(dto.getParentCategory()));
         }
         //카테고리 정렬번호 수정

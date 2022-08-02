@@ -149,6 +149,7 @@ class CategoryServiceTest {
 
         private Long id;
         private CategoryDto dto;
+        private CategoryDto dtoTwice;
         private CategoryEntity categoryEntity;
         private CategoryEntity pagrentCategoryEntity;
         private CategoryEntity prevPagrentCategoryEntity;
@@ -158,6 +159,7 @@ class CategoryServiceTest {
         void save_setup() {
             id = 2L;
             dto = CategoryDto.builder().categoryNm("변경 카테고리명").parentCategory(CategoryDto.builder().id(1L).build()).build();
+            dtoTwice = CategoryDto.builder().categoryNm("변경 카테고리명").build();
             categoryEntity = CategoryEntity
                     .builder()
                     .id(2L)
@@ -228,7 +230,10 @@ class CategoryServiceTest {
 
         @Test
         void 카테고리_수정과_부모객체_수정시_수정전_현_depth_카테고리_orderNo_재정렬(){
+
+            //부모카테고리 세팅
             categoryEntity.changeParentCategory(pagrentCategoryEntity);
+
             given(categoryRepository.findById(anyLong())).willReturn(Optional.of(categoryEntity));
             given(categoryQueryRepository.findAllChildCategorys(any())).willReturn(
                     Arrays.asList(
@@ -246,14 +251,19 @@ class CategoryServiceTest {
             //Category 수정이 정상이고 파라미터로 넘어온 dto에 부모객체가 존재할시
             var updateResult = 1;
             List<CategoryApiDto> tmpList = new ArrayList<>();
-            if(updateResult > 0 && null != dto.getParentCategory() && null != findCategoryEntity.getParentCategory()){
+            if(updateResult > 0 && null != dto.getParentCategory()){
                 int orderNo = 1;
-                //수정전 죄회한 Category entity에서 부모 Category id를 이용하여 자식 Category 모두 조회
-                for (CategoryApiDto tmpDto : categoryQueryRepository.findAllChildCategorys(Collections.singletonList(findCategoryEntity.getParentCategory().getId()))) {
+                List<CategoryApiDto> findAllCategorys = new ArrayList<>();
+
+                //부모 Category id를 이용하여 자식 Category 모두 조회
+                findAllCategorys = categoryQueryRepository.findAllChildCategorys(Collections.singletonList(findCategoryEntity.getParentCategory().getId()));
+
+
+                for (CategoryApiDto tmpDto : findAllCategorys) {
                     //자식 Category 루프문 순회하여 orderNo 재정렬
                     tmpDto.setOrderNo(orderNo);
-                    tmpList.add(tmpDto);
                     orderNo++;
+                    tmpList.add(tmpDto);
                 }
             }
 
@@ -265,6 +275,56 @@ class CategoryServiceTest {
 
             verify(categoryRepository).findById(id);
             verify(categoryQueryRepository).findAllChildCategorys(Collections.singletonList(findCategoryEntity.getParentCategory().getId()));
+        }
+
+        @Test
+        void 카테고리_수정과_수정전_현_depth_카테고리_orderNo_재정렬(){
+
+            given(categoryRepository.findById(anyLong())).willReturn(Optional.of(categoryEntity));
+            given(categoryRepository.findByDepthAndDeleteFlag(anyInt(),anyString())).willReturn(
+                    Arrays.asList(
+                            CategoryEntity.builder().id(5L).categoryNm("카테고리5").orderNo(1).depth(2).build(),
+                            CategoryEntity.builder().id(6L).categoryNm("카테고리6").orderNo(2).depth(2).build(),
+                            CategoryEntity.builder().id(7L).categoryNm("카테고리7").orderNo(4).depth(2).build(),
+                            CategoryEntity.builder().id(8L).categoryNm("카테고리8").orderNo(5).depth(2).build(),
+                            CategoryEntity.builder().id(9L).categoryNm("카테고리9").orderNo(6).depth(2).build()
+                    )
+            );
+
+            //수정할 Category 조회
+            var findCategoryEntity = categoryRepository.findById(id).orElseThrow(() -> new CategoryException(ErrorCode.CATEGORY_NOT_FOUND));
+
+
+            //Category 수정이 정상이고 파라미터로 넘어온 dto에 부모객체가 존재할시
+            var updateResult = 1;
+            List<CategoryApiDto> tmpList = new ArrayList<>();
+            if(updateResult > 0 && null != dto.getParentCategory()){
+                int orderNo = 1;
+                List<CategoryApiDto> findAllCategorys = new ArrayList<>();
+
+                //부모 Category가 없을시 현 depth Category 조회
+
+                findAllCategorys = categoryRepository.findByDepthAndDeleteFlag(findCategoryEntity.getDepth(), "N").stream().map(CategoryApiDto::dtoConvert).collect(Collectors.toList());
+
+
+                for (CategoryApiDto tmpDto : findAllCategorys) {
+                    //자식 Category 루프문 순회하여 orderNo 재정렬
+                    tmpDto.setOrderNo(orderNo);
+                    orderNo++;
+                    //categoryQueryRepository.updateCategoryOrderNo(tmpDto.getId(), tmpDto.getOrderNo());
+                    tmpList.add(tmpDto);
+                }
+            }
+
+            Assertions.assertThat(categoryEntity.getCategoryNm()).isEqualTo(findCategoryEntity.getCategoryNm());
+            Assertions.assertThat(1).isEqualTo(tmpList.get(0).getOrderNo());
+            Assertions.assertThat(2).isEqualTo(tmpList.get(1).getOrderNo());
+            Assertions.assertThat(3).isEqualTo(tmpList.get(2).getOrderNo());
+            Assertions.assertThat(4).isEqualTo(tmpList.get(3).getOrderNo());
+            Assertions.assertThat(5).isEqualTo(tmpList.get(4).getOrderNo());
+
+            verify(categoryRepository).findById(id);
+            verify(categoryRepository).findByDepthAndDeleteFlag(findCategoryEntity.getDepth(), "N");
         }
     }
 

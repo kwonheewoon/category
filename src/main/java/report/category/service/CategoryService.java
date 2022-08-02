@@ -1,6 +1,6 @@
 package report.category.service;
 
-import jdk.jfr.Category;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -69,7 +69,7 @@ public class CategoryService {
         long parentCategoryId = 0;
 
         //파라미터로 넘어온 dto 부모 객체가 null이 아닐경우
-        if(null != dto.getParentCategory()) {
+        if(!dto.parentCategoryisEmpty()) {
             //부모 Category 조회
             var findCategoryEntity = categoryRepository.findByIdAndDeleteFlag(dto.getParentCategory().getId(), "N").orElseThrow(() -> new CategoryException(ErrorCode.CATEGORY_NOT_FOUND));
             //부모 Category id 저장
@@ -93,14 +93,20 @@ public class CategoryService {
     @Transactional
     public CategoryApiDto modifyCategory(Long id, CategoryDto dto){
 
+        /*수정시 depth는 1이하의 값만 허용*/
+        /*1depth 이상은 부모 카테고리 값 수정시 자동 depth 변경*/
+        if(!dto.depthValid()){
+            throw new CategoryException(ErrorCode.CATEGORY_DEPTH_VALID);
+        }
+
         //수정할 Category 조회
         var findCategoryEntity = categoryRepository.findById(id).orElseThrow(() -> new CategoryException(ErrorCode.CATEGORY_NOT_FOUND));
 
-        //부모 객체 저장
+        //현 부모 객체 저장
         var parentCategoryDto = CategoryDto.dtoConvert(findCategoryEntity.getParentCategory());
 
         //부모 Category 값이 비어있지 않을시 수정
-        if(null !=  dto.getParentCategory()){
+        if(!dto.parentCategoryisEmpty()){
             //부모 Category 조회
             var pagrentCategoryEntity = categoryRepository.findById(dto.getParentCategory().getId()).orElseThrow(() -> new CategoryException(ErrorCode.CATEGORY_NOT_FOUND));
 
@@ -114,13 +120,24 @@ public class CategoryService {
         //Category 수정후 영향받은 로우 개수 리턴 = 1
         Long updateResult = categoryQueryRepository.updateCategory(id, dto);
 
+        //Category 수정후 수정된 Category 조회
+        var updtCompCategory = categoryQueryRepository.findCategoryOne(id).orElseThrow(() -> new CategoryException(ErrorCode.CATEGORY_NOT_FOUND));
+
         //Category 수정이 정상이고 파라미터로 넘어온 dto에 부모객체가 존재할시
-        if(updateResult > 0 && null != dto.getParentCategory() && null != findCategoryEntity.getParentCategory()){
+        if(updateResult > 0 && !dto.parentCategoryisEmpty()){
             //orderNo 재정렬 함수 호출
             reOrderNo(parentCategoryDto, findCategoryEntity.getDepth());
+            updtDepthChildCategory(Collections.singletonList(updtCompCategory), updtCompCategory.getDepth());
+        }
+        if(updateResult > 0 && 1 == dto.getDepth()){
+            //orderNo 재정렬 함수 호출
+            reOrderNo(dto, dto.getDepth());
+            updtDepthChildCategory(Collections.singletonList(updtCompCategory), updtCompCategory.getDepth());
+            var deleteParent = categoryRepository.findById(id).orElseThrow(() -> new CategoryException(ErrorCode.CATEGORY_NOT_FOUND));
+            deleteParent.setParent(null);
         }
 
-        return categoryQueryRepository.findCategoryOne(id).orElseThrow(() -> new CategoryException(ErrorCode.CATEGORY_NOT_FOUND));
+        return updtCompCategory;
     }
 
     /**
@@ -187,6 +204,41 @@ public class CategoryService {
     }
 
     /**
+     * 하위 depth 자식 Category depth 변경 (재귀함수)
+     */
+    public List<CategoryApiDto> updtDepthChildCategory(List<CategoryApiDto> parentCategoryList, int depth) throws CategoryException{
+
+        //파라미터로 넘어온 부모객체의 id 값만 뽑아 자식 Category 조회
+        var childResult = categoryQueryRepository.findAllChildCategorys(
+                parentCategoryList.stream().map(CategoryApiDto::getId).collect(Collectors.toList())
+        );
+
+        //현 Category에서 자식 Category가 존재하지 않을시 재귀 종료
+        if(childResult.isEmpty()){
+            return parentCategoryList;
+        }
+
+        //부모 Category entity에 자식 Category List 저장
+        parentCategoryList = parentCategoryList.stream().map(parentCategoryData -> {
+                    var setChildResultList = childResult.stream().filter(childCategoryData -> parentCategoryData.getId() == childCategoryData.getParentCategory().getId()).collect(Collectors.toList());
+                    setChildResultList.forEach(
+                            setChildResultData -> {
+                                categoryQueryRepository.updateCategoryDepth(setChildResultData.getId(), depth + 1);
+                            }
+                    );
+                    parentCategoryData.setChildCategoryList(setChildResultList);
+                    return parentCategoryData;
+                }
+        ).collect(Collectors.toList());
+
+        //재귀 종료 전까지 지속해서 하위 depth 자식 Category 조회
+        updtDepthChildCategory(childResult, depth + 1);
+
+        //재귀문 종료시 파라미터로 넘어온 부모 Category 리턴
+        return parentCategoryList;
+    }
+
+    /**
      *
      * orderNo 재정렬 함수
      * */
@@ -196,7 +248,7 @@ public class CategoryService {
         List<CategoryApiDto> findAllCategorys = new ArrayList<>();
 
         //부모 Category가 없을시 현 depth Category 조회
-        if(0 >= parentCategoryDto.getId()) {
+        if(parentCategoryDto.parentCategoryisEmpty()) {
             findAllCategorys = categoryRepository.findByDepthAndDeleteFlag(depth, "N").stream().map(CategoryApiDto::dtoConvert).collect(Collectors.toList());
         }
         //부모 Category id를 이용하여 자식 Category 모두 조회

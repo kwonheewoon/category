@@ -2,10 +2,6 @@ package report.category.dto;
 
 import lombok.*;
 import report.category.entity.CategoryEntity;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 @Builder
@@ -30,6 +26,15 @@ public class CategoryDto {
     /*부모 카테고리*/
     private CategoryDto parentCategory;
 
+    /*수정시 depth는 1이하의 값만 허용*/
+    public boolean depthValid(){
+        return depth <= 1;
+    }
+
+    /*부모 카테고리 값 체크*/
+    public boolean parentCategoryisEmpty(){
+        return parentCategory == null || parentCategory.getId() <= 0;
+    }
 
     @Override
     public boolean equals(Object o) {

@@ -157,9 +157,10 @@ public class CategoryQueryRepository {
             updateBuilder.set(categoryEntity.categoryNm, dto.getCategoryNm());
         }
         //부모 카테고리 수정
-        if (null != dto.getParentCategory()) {
+        if (!dto.parentCategoryisEmpty()) {
             updateBuilder.set(categoryEntity.parentCategory, CategoryEntity.entityConvert(dto.getParentCategory()));
         }
+
         //카테고리 정렬번호 수정
         if (dto.getOrderNo() > 0) {
             updateBuilder.set(categoryEntity.orderNo, dto.getOrderNo());
@@ -183,6 +184,20 @@ public class CategoryQueryRepository {
         var result = this.queryFactory
                 .update(categoryEntity)
                 .set(categoryEntity.orderNo, orderNo)
+                .set(categoryEntity.lastModifiedDate, LocalDateTime.now())
+                .where(categoryEntity.id.eq(id))
+                .execute();
+        return result;
+    }
+
+    /**
+     * Category depth 수정
+     * */
+    public Long updateCategoryDepth(Long id, int depth) {
+        var categoryEntity = QCategoryEntity.categoryEntity;
+        var result = this.queryFactory
+                .update(categoryEntity)
+                .set(categoryEntity.depth, depth)
                 .set(categoryEntity.lastModifiedDate, LocalDateTime.now())
                 .where(categoryEntity.id.eq(id))
                 .execute();

@@ -15,6 +15,11 @@ public enum ErrorCode {
     BAD_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 요청입니다."),
 
     /*
+     * 400 CATEGORY_DEPTH_VALID: DEPTH는 1-DEPTH로 수정만 가능합니다.
+     */
+    CATEGORY_DEPTH_VALID(HttpStatus.BAD_REQUEST, "DEPTH는 1-DEPTH로 수정만 가능합니다."),
+
+    /*
      * 404 NOT_FOUND: 리소스를 찾을 수 없음
      */
     CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "카테고리 정보를 찾을 수 없습니다."),
