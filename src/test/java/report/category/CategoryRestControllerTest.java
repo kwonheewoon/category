@@ -14,6 +14,7 @@ import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import report.category.controller.CategoryRestController;
 import report.category.dto.CategoryApiDto;
 import report.category.dto.CategoryDto;
 import report.category.enumclass.CategoryEnum;
@@ -75,9 +76,9 @@ public class CategoryRestControllerTest {
     void 상위_카테고리_조회() throws Exception {
         CategoryVo vo = new CategoryVo();
 
-        given(categoryService.find(anyLong())).willReturn(Arrays.asList(new CategoryApiDto(1L, "카테고리1", 1, "N", LocalDateTime.now(), LocalDateTime.now())));
+        given(categoryService.find(anyLong())).willReturn(new CategoryApiDto(1L, "카테고리1", 1, "N", LocalDateTime.now(), LocalDateTime.now()));
 
-        String expectByUsername = "$.result[0].categoryNm";
+        String expectByUsername = "$.result.categoryNm";
 
         mockMvc.perform(
                         get("/categorys/1")

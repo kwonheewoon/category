@@ -1,5 +1,6 @@
 package report.category.service;
 
+import jdk.jfr.Category;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,14 +41,14 @@ public class CategoryService {
      * 상위 Category 조회
      *   ㄴ하위 Category 조회
      */
-    public List<CategoryApiDto> find(Long searchCategoryId) throws CategoryException{
+    public CategoryApiDto find(Long searchCategoryId) throws CategoryException{
 
         //상위 Category 조회
-        var result = categoryQueryRepository.findCategoryOne(searchCategoryId);
-        
+        var result = categoryQueryRepository.findCategoryOne(searchCategoryId).orElseThrow(() -> new CategoryException(ErrorCode.CATEGORY_NOT_FOUND));
+
         //하위 depth Category 조회하여 세팅해준 후 리턴
         //메모리 절약을 위해 싱글톤 arrayList 생성
-        return setChildCategory(Collections.singletonList(result));
+        return setChildCategory(Collections.singletonList(result)).stream().findFirst().orElseThrow(() -> new CategoryException(ErrorCode.CATEGORY_NOT_FOUND));
     }
 
     /**
@@ -83,7 +84,7 @@ public class CategoryService {
         categoryEntity.changeOrderNo(categoryQueryRepository.maxOrderNo(parentCategoryId, categoryEntity.getDepth()).intValue() + 1);
 
         //저장후 데이터 조회후 리턴
-        return categoryQueryRepository.findCategoryOne(categoryRepository.save(categoryEntity).getId());
+        return categoryQueryRepository.findCategoryOne(categoryRepository.save(categoryEntity).getId()).orElseThrow(() -> new CategoryException(ErrorCode.CATEGORY_NOT_FOUND));
     }
 
     /**
@@ -94,6 +95,9 @@ public class CategoryService {
 
         //수정할 Category 조회
         var findCategoryEntity = categoryRepository.findById(id).orElseThrow(() -> new CategoryException(ErrorCode.CATEGORY_NOT_FOUND));
+
+        //부모 객체 저장
+        var parentCategoryDto = CategoryDto.dtoConvert(findCategoryEntity.getParentCategory());
 
         //부모 Category 값이 비어있지 않을시 수정
         if(null !=  dto.getParentCategory()){
@@ -112,17 +116,11 @@ public class CategoryService {
 
         //Category 수정이 정상이고 파라미터로 넘어온 dto에 부모객체가 존재할시
         if(updateResult > 0 && null != dto.getParentCategory() && null != findCategoryEntity.getParentCategory()){
-            int orderNo = 1;
-            //수정전 죄회한 Category entity에서 부모 Category id를 이용하여 자식 Category 모두 조회
-            for (CategoryApiDto tmpDto : categoryQueryRepository.findAllChildCategorys(Collections.singletonList(findCategoryEntity.getParentCategory().getId()))) {
-                //자식 Category 루프문 순회하여 orderNo 재정렬
-                tmpDto.setOrderNo(orderNo);
-                orderNo++;
-                categoryQueryRepository.updateCategoryOrderNo(tmpDto.getId(), tmpDto.getOrderNo());
-            }
+            //orderNo 재정렬 함수 호출
+            reOrderNo(parentCategoryDto, findCategoryEntity.getDepth());
         }
 
-        return categoryQueryRepository.findCategoryOne(id);
+        return categoryQueryRepository.findCategoryOne(id).orElseThrow(() -> new CategoryException(ErrorCode.CATEGORY_NOT_FOUND));
     }
 
     /**
@@ -133,12 +131,26 @@ public class CategoryService {
     public String deleteCategory(Long id){
 
         //삭제할 Category 조회
-        var findCategoryEntity = categoryRepository.findById(id).orElseThrow(() -> new CategoryException(ErrorCode.CATEGORY_NOT_FOUND));
+        var findCategoryDto = categoryQueryRepository.findCategoryOne(id).orElseThrow(() -> new CategoryException(ErrorCode.CATEGORY_NOT_FOUND));
+
+        //조회한 Category depth 저장
+        int nowDepth = findCategoryDto.getDepth();
+
+        //부모 객체 저장
+        var parentCategoryDto = CategoryDto.builder().id(findCategoryDto.getParentCategory().getId()).build();
+
         //Category 삭제
-        categoryRepository.deleteById(findCategoryEntity.getId());
+        try{
+            categoryRepository.deleteById(findCategoryDto.getId());
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
 
         //삭제된 Category 조회후 존재하지 않으면 삭제 성공
-        if(categoryQueryRepository.findCategoryOne(findCategoryEntity.getId()) == null){
+        if(categoryQueryRepository.findCategoryOne(findCategoryDto.getId()).isEmpty()){
+            //orderNo 재정렬 함수 호출
+            reOrderNo(parentCategoryDto, nowDepth);
             return CategoryEnum.CATEGORY_DELETE_SUCESS.getMessage();
         }
 
@@ -151,7 +163,9 @@ public class CategoryService {
     public List<CategoryApiDto> setChildCategory(List<CategoryApiDto> parentCategoryList) throws CategoryException{
 
         //파라미터로 넘어온 부모객체의 id 값만 뽑아 자식 Category 조회
-        var childResult = categoryQueryRepository.findAllChildCategorys(parentCategoryList.stream().map(CategoryApiDto::getId).collect(Collectors.toList()));
+        var childResult = categoryQueryRepository.findAllChildCategorys(
+                parentCategoryList.stream().map(CategoryApiDto::getId).collect(Collectors.toList())
+        );
 
         //현 Category에서 자식 Category가 존재하지 않을시 재귀 종료
         if(childResult.isEmpty()){
@@ -171,4 +185,31 @@ public class CategoryService {
         //재귀문 종료시 파라미터로 넘어온 부모 Category 리턴
         return parentCategoryList;
     }
+
+    /**
+     *
+     * orderNo 재정렬 함수
+     * */
+    public void reOrderNo(CategoryDto parentCategoryDto, int depth){
+        int orderNo = 1;
+
+        List<CategoryApiDto> findAllCategorys = new ArrayList<>();
+
+        //부모 Category가 없을시 현 depth Category 조회
+        if(0 >= parentCategoryDto.getId()) {
+            findAllCategorys = categoryRepository.findByDepthAndDeleteFlag(depth, "N").stream().map(CategoryApiDto::dtoConvert).collect(Collectors.toList());
+        }
+        //부모 Category id를 이용하여 자식 Category 모두 조회
+        else{
+            findAllCategorys = categoryQueryRepository.findAllChildCategorys(Collections.singletonList(parentCategoryDto.getId()));
+        }
+
+        for (CategoryApiDto tmpDto : findAllCategorys) {
+            //자식 Category 루프문 순회하여 orderNo 재정렬
+            tmpDto.setOrderNo(orderNo);
+            orderNo++;
+            categoryQueryRepository.updateCategoryOrderNo(tmpDto.getId(), tmpDto.getOrderNo());
+        }
+    }
+
 }

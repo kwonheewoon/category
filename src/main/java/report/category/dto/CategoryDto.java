@@ -1,6 +1,8 @@
 package report.category.dto;
 
 import lombok.*;
+import report.category.entity.CategoryEntity;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +42,19 @@ public class CategoryDto {
     @Override
     public int hashCode() {
         return Objects.hash(id, categoryNm, orderNo, depth, parentCategory);
+    }
+
+    public static CategoryDto dtoConvert(CategoryEntity categoryEntity){
+
+        if(null != categoryEntity){
+            return CategoryDto.builder()
+                    .id(categoryEntity.getId())
+                    .categoryNm(categoryEntity.getCategoryNm())
+                    .orderNo(categoryEntity.getOrderNo())
+                    .depth(categoryEntity.getDepth())
+                    .build();
+        }
+        return new CategoryDto();
     }
 
 }

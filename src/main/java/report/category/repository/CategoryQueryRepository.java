@@ -14,6 +14,7 @@ import report.category.entity.QCategoryEntity;
 import report.category.vo.CategoryVo;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -76,15 +77,16 @@ public class CategoryQueryRepository {
     /**
      * 상위 Category 조회
     * */
-    public CategoryApiDto findCategoryOne(Long searchCategoryId){
+    public Optional<CategoryApiDto> findCategoryOne(Long searchCategoryId){
         var categoryEntity = QCategoryEntity.categoryEntity;
         var parentCategoryEntity = new QCategoryEntity("parentCategoryEntity");
 
-        return this.queryFactory
+        return Optional.ofNullable(this.queryFactory
                 .select(Projections.fields(
                         CategoryApiDto.class,
                         categoryEntity.id,
                         categoryEntity.categoryNm,
+                        categoryEntity.depth,
                         categoryEntity.orderNo,
                         categoryEntity.deleteFlag,
                         categoryEntity.createDate,
@@ -104,7 +106,7 @@ public class CategoryQueryRepository {
                         categoryEntity.deleteFlag.eq("N")
                 )
                 .orderBy(categoryEntity.orderNo.asc())
-                .fetchOne();
+                .fetchOne());
     }
 
     /**

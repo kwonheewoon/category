@@ -313,9 +313,9 @@ class CategoryServiceTest {
 
         @Test
         void 상위_카테고리_상세조회(){
-            given(categoryQueryRepository.findCategoryOne(anyLong())).willReturn(new CategoryApiDto(5L, "부모 카테고리5", 1, "N", LocalDateTime.now(), LocalDateTime.now()));
+            given(categoryQueryRepository.findCategoryOne(anyLong())).willReturn(Optional.ofNullable(new CategoryApiDto(5L, "부모 카테고리5", 1, "N", LocalDateTime.now(), LocalDateTime.now())));
 
-            var result = categoryQueryRepository.findCategoryOne(5L);
+            var result = categoryQueryRepository.findCategoryOne(5L).orElseThrow();
 
             assertNotNull(result);
             Assertions.assertThat(result.getId()).isEqualTo(5L);
