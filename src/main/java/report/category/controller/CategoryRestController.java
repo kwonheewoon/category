@@ -7,8 +7,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import report.category.dto.CategoryDto;
+import report.category.enumclass.CategoryEnum;
 import report.category.exception.CategoryException;
 import report.category.service.CategoryService;
+import report.category.util.SucessResponse;
 import report.category.vo.CategoryVo;
 
 
@@ -28,7 +30,7 @@ public class CategoryRestController {
         var resultList = categoryService.categoryList(vo);
         results.put("result", resultList);
 
-        return new ResponseEntity<>(results, HttpStatus.OK);
+        return new ResponseEntity<>(new SucessResponse(CategoryEnum.CATEGORY_FIND_SUCESS, resultList), HttpStatus.OK);
     }
 
     /*
@@ -42,7 +44,7 @@ public class CategoryRestController {
         var resultList = categoryService.find(id);
         results.put("result", resultList);
 
-        return new ResponseEntity<>(results, HttpStatus.OK);
+        return new ResponseEntity<>(new SucessResponse(CategoryEnum.CATEGORY_FIND_SUCESS, resultList), HttpStatus.OK);
     }
 
     /*

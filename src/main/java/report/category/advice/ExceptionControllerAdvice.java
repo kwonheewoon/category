@@ -1,6 +1,7 @@
 package report.category.advice;
 
 import lombok.extern.slf4j.Slf4j;
+import org.json.simple.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -24,6 +25,7 @@ public class ExceptionControllerAdvice {
     })
     public ResponseEntity<ErrorResponse> BadRequestException(final CategoryException ex) {
         log.error("CategoryException: {}", ex.getErrorCode());
+
         return ResponseEntity
                 .status(ex.getErrorCode().getStatus().value())
                 .body(new ErrorResponse(ex.getErrorCode()));
