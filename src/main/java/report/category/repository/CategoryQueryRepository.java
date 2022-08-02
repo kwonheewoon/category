@@ -21,8 +21,8 @@ public class CategoryQueryRepository {
 
     private final JPAQueryFactory queryFactory;
 
-    /*
-    * 부모 Category id 와 현 depth가 일치하는 Category 카운팅
+    /**
+     * 부모 Category id 와 현 depth가 일치하는 Category 카운팅
     * */
     public Long maxOrderNo(Long parentCategoryId, int depth){
         var categoryEntity = QCategoryEntity.categoryEntity;
@@ -38,8 +38,8 @@ public class CategoryQueryRepository {
                 .fetchOne();
     }
 
-    /*
-    * 전체 Category 조회
+    /**
+     * 전체 Category 조회
     * */
     public List<CategoryApiDto> findAllcategorys(CategoryVo vo){
         var categoryEntity = QCategoryEntity.categoryEntity;
@@ -73,8 +73,8 @@ public class CategoryQueryRepository {
                 .fetch();
     }
 
-    /*
-    * 상위 Category 조회
+    /**
+     * 상위 Category 조회
     * */
     public CategoryApiDto findCategoryOne(Long searchCategoryId){
         var categoryEntity = QCategoryEntity.categoryEntity;
@@ -107,8 +107,8 @@ public class CategoryQueryRepository {
                 .fetchOne();
     }
 
-    /*
-    * 자식 Category 조회
+    /**
+     * 자식 Category 조회
     * */
     public List<CategoryApiDto> findAllChildCategorys(List<Long> parentCategoryIds){
         var chcildCategoryEntity = QCategoryEntity.categoryEntity;
@@ -142,8 +142,8 @@ public class CategoryQueryRepository {
                 .fetch();
     }
 
-    /*
-    * Category 수정
+    /**
+     * Category 수정
     * */
     public Long updateCategory(Long id, CategoryDto dto) {
         var categoryEntity = QCategoryEntity.categoryEntity;
@@ -173,8 +173,8 @@ public class CategoryQueryRepository {
                 .execute();
     }
 
-    /*
-    * Category orderNo 수정
+    /**
+     * Category orderNo 수정
     * */
     public Long updateCategoryOrderNo(Long id, int orderNo) {
         var categoryEntity = QCategoryEntity.categoryEntity;
@@ -187,8 +187,8 @@ public class CategoryQueryRepository {
         return result;
     }
 
-    /*
-    *
+    /**
+     *
     * */
     public Long deleteCategory(Long id) {
         var categoryEntity = QCategoryEntity.categoryEntity;
