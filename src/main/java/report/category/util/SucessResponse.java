@@ -2,6 +2,7 @@ package report.category.util;
 
 import lombok.Getter;
 import org.json.simple.JSONObject;
+import report.category.dto.CategoryDto;
 import report.category.enumclass.CategoryEnum;
 import report.category.exception.ErrorCode;
 
@@ -21,6 +22,13 @@ public class SucessResponse <T>{
         this.code = categoryEnum.getCode();
         this.message = categoryEnum.getMessage();
         this.result = parameter;
+    }
+
+    public SucessResponse(String code, String message) {
+        //this.status = errorCode.getStatus().value();
+        //this.error = errorCode.getStatus().name();
+        this.code = code;
+        this.message = message;
     }
 
 }

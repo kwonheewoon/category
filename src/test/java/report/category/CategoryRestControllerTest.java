@@ -19,6 +19,7 @@ import report.category.dto.CategoryApiDto;
 import report.category.dto.CategoryDto;
 import report.category.enumclass.CategoryEnum;
 import report.category.service.CategoryService;
+import report.category.util.SucessResponse;
 import report.category.vo.CategoryVo;
 
 import java.time.LocalDateTime;
@@ -101,7 +102,7 @@ public class CategoryRestControllerTest {
 
         given(categoryService.saveCategory(any(CategoryDto.class))).willReturn(new CategoryApiDto(1L, "카테고리1 등록", 1, "N", LocalDateTime.now(), LocalDateTime.now()));
 
-        String expectByUsername = "$.categoryNm";
+        String expectByUsername = "$.result.categoryNm";
 
         mockMvc.perform(
                         post("/categorys")
@@ -130,7 +131,7 @@ public class CategoryRestControllerTest {
 
         given(categoryService.modifyCategory(any(),any())).willReturn(new CategoryApiDto(1L, "카테고리1 수정", 1, "N", LocalDateTime.now(), LocalDateTime.now()));
 
-        String expectByUsername = "$.categoryNm";
+        String expectByUsername = "$.result.categoryNm";
 
         mockMvc.perform(
                         patch("/categorys/1")
@@ -157,7 +158,7 @@ public class CategoryRestControllerTest {
         dto.setCategoryNm("카테고리1 수정");
         dto.setParentCategory(CategoryDto.builder().id(3L).build());
         //doNothing().when(categoryService).deleteCategory(any());
-        given(categoryService.deleteCategory(anyLong())).willReturn(CategoryEnum.CATEGORY_DELETE_SUCESS.getMessage());
+        given(categoryService.deleteCategory(anyLong())).willReturn(new SucessResponse(CategoryEnum.CATEGORY_DELETE_SUCESS.getCode(), CategoryEnum.CATEGORY_DELETE_SUCESS.getMessage()));
 
         mockMvc.perform(
                         delete("/categorys/1")

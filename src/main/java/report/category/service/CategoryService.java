@@ -12,6 +12,7 @@ import report.category.exception.CategoryException;
 import report.category.exception.ErrorCode;
 import report.category.repository.CategoryQueryRepository;
 import report.category.repository.CategoryRepository;
+import report.category.util.SucessResponse;
 import report.category.vo.CategoryVo;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -137,7 +138,7 @@ public class CategoryService {
             deleteParent.setParent(null);
         }
 
-        return updtCompCategory;
+        return setChildCategory(Collections.singletonList(updtCompCategory)).stream().findFirst().orElseThrow(() -> new CategoryException(ErrorCode.CATEGORY_NOT_FOUND));
     }
 
     /**
@@ -145,7 +146,7 @@ public class CategoryService {
      * 연관관계 매핑되어 있는 자식 Category 일괄 삭제
      */
     @Transactional
-    public String deleteCategory(Long id){
+    public SucessResponse deleteCategory(Long id){
 
         //삭제할 Category 조회
         var findCategoryDto = categoryQueryRepository.findCategoryOne(id).orElseThrow(() -> new CategoryException(ErrorCode.CATEGORY_NOT_FOUND));
@@ -168,10 +169,10 @@ public class CategoryService {
         if(categoryQueryRepository.findCategoryOne(findCategoryDto.getId()).isEmpty()){
             //orderNo 재정렬 함수 호출
             reOrderNo(parentCategoryDto, nowDepth);
-            return CategoryEnum.CATEGORY_DELETE_SUCESS.getMessage();
+            return new SucessResponse(CategoryEnum.CATEGORY_DELETE_SUCESS.getCode(), CategoryEnum.CATEGORY_DELETE_SUCESS.getMessage());
         }
 
-        return CategoryEnum.CATEGORY_DELETE_FAIL.getMessage();
+        return new SucessResponse(CategoryEnum.CATEGORY_DELETE_FAIL.getCode(), CategoryEnum.CATEGORY_DELETE_FAIL.getMessage());
     }
 
     /**

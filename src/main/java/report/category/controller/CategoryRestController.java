@@ -54,7 +54,7 @@ public class CategoryRestController {
     @ApiOperation(value = "3.Category 저장")
     public ResponseEntity<Object> save(@RequestBody CategoryDto dto){
 
-        return new ResponseEntity<>(categoryService.saveCategory(dto), HttpStatus.CREATED);
+        return new ResponseEntity<>(new SucessResponse(CategoryEnum.CATEGORY_SAVE_SUCESS, categoryService.saveCategory(dto)), HttpStatus.CREATED);
 
     }
 
@@ -64,7 +64,7 @@ public class CategoryRestController {
     @PatchMapping("/categorys/{id}")
     @ApiOperation(value = "4.Category 수정")
     public ResponseEntity<Object> modify(@PathVariable Long id, @RequestBody CategoryDto dto){
-        return new ResponseEntity<>(categoryService.modifyCategory(id, dto), HttpStatus.CREATED);
+        return new ResponseEntity<>(new SucessResponse(CategoryEnum.CATEGORY_MODIFY_SUCESS, categoryService.modifyCategory(id, dto)), HttpStatus.CREATED);
 
     }
 
